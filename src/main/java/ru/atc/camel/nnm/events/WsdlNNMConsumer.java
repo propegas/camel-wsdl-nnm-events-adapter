@@ -94,17 +94,20 @@ public class WsdlNNMConsumer extends ScheduledPollConsumer {
 		nmsincident = sampleClient.getIncidentService();
 		//
 		
-		Incident[] event = null;
+		Incident[] events = null;
 		
 		//endpoint.getConfiguration().setLasttimestamp(delay);
 		//event.getCreated().getTime() / 1000 
-		logger.info(" **** getLasttimestamp");
-		logger.info(String.format("%d", endpoint.getConfiguration().getLasttimestamp()));
+		long Lasttimestamp = endpoint.getConfiguration().getLasttimestamp();
+		logger.info(String.format("**** Saved Lasttimestamp: %d", Lasttimestamp));
+		long timestamp = 0;
+		
 		
 		try {
 			logger.info(" **** Try to receive Opened Events ");
-			endpoint.getConfiguration().setLasttimestamp(System.currentTimeMillis());
-			event = nmsincident.getIncidents(existFilter);
+			timestamp = System.currentTimeMillis();
+			events = nmsincident.getIncidents(existFilter);
+			
 			
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -113,18 +116,17 @@ public class WsdlNNMConsumer extends ScheduledPollConsumer {
 			e.printStackTrace();
 		}
 		
-		logger.info(" **** Received " + event.length + " Opened Events ****");
+		logger.info(" **** Received " + events.length + " Opened Events ****");
 		
-		long Lasttimestamp = endpoint.getConfiguration().getLasttimestamp();
 		Date date = new Date(Lasttimestamp); 
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z");
 		String formattedDate = sdf.format(date);
 		
 		// get Old closed events
 		Incident[] closed_events = null;
-		Incident[] allevents = null;
-		
-		if (Lasttimestamp != 0) {
+		if (Lasttimestamp == 0) {
+			Lasttimestamp = timestamp;
+		}
 			
 			Condition cond = new Condition();
 			cond.setName("modified");
@@ -146,6 +148,7 @@ public class WsdlNNMConsumer extends ScheduledPollConsumer {
 				logger.info(" **** Try to receive Closed Events from " + formattedDate + 
 						" (" + Lasttimestamp + ")");
 				closed_events = nmsincident.getIncidents(existFilter);
+				endpoint.getConfiguration().setLasttimestamp(timestamp);
 				
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
@@ -154,26 +157,24 @@ public class WsdlNNMConsumer extends ScheduledPollConsumer {
 				e.printStackTrace();
 			}
 			
-			logger.info(" **** Received " + event.length + " Opened Events ****");
-			
-			allevents = (Incident[]) ArrayUtils.addAll(event,closed_events);
-			
+			logger.info(" **** Received " + closed_events.length + " CLosed Events ****");
+				
 			//closed_events
-		}
 		
+		Incident[] allevents = (Incident[]) ArrayUtils.addAll(events,closed_events);
 		Event genevent = new Event();
 		
 		for(int i=0; i < allevents.length; i++){
 
-			genevent = genEventObj(event[i]);
+			genevent = genEventObj(allevents[i]);
 			
-			logger.info(genevent.toString());
-			logger.info(String.format("%d", event[i].getModified().getTime() / 1000));
+			logger.debug(genevent.toString());
+			logger.debug(String.format("%d", allevents[i].getModified().getTime() / 1000));
 			
 			logger.info(" **** Create Exchange container");
 	        Exchange exchange = getEndpoint().createExchange();
 	        exchange.getIn().setBody(genevent, Event.class);
-	        exchange.getIn().setHeader("EventIdAndStatus", event[i].getUuid()+"_"+genevent.getStatus());
+	        exchange.getIn().setHeader("EventIdAndStatus", allevents[i].getUuid()+"_"+genevent.getStatus());
 
 	        getProcessor().process(exchange); 
 			

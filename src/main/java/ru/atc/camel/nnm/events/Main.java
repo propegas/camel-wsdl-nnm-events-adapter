@@ -126,8 +126,9 @@ public class Main {
 		    	//.marshal().json(JsonLibrary.Jackson,Event.class)
 		    		.marshal(myJson)
 		    	//.marshal(myJaxb)
-		    		.log("${id} ${header.EventIdAndStatus}")
-		    		.to("activemq:NNM-tgc1-Events.queue");
+		    		//.log("${id} ${header.EventIdAndStatus}")
+		    		.to("activemq:NNM-tgc1-Events.queue")
+					.log("*** NEW EVENT: ${id} ${header.EventIdAndStatus}");
 				}
 		});
 		
