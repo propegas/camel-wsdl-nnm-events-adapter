@@ -113,7 +113,7 @@ public class WsdlNNMConsumer extends ScheduledPollConsumer {
 			// TODO Auto-generated catch block
 			logger.debug(" **** Error while receiving Opened Events " );
 			logger.debug( e.getMessage() );
-			e.printStackTrace();
+			//e.printStackTrace();
 		}
 		
 		logger.info(" **** Received " + events.length + " Opened Events ****");
@@ -154,7 +154,7 @@ public class WsdlNNMConsumer extends ScheduledPollConsumer {
 				// TODO Auto-generated catch block
 				logger.debug(" **** Error while receiving Opened Events " );
 				logger.debug( e.getMessage() );
-				e.printStackTrace();
+				//e.printStackTrace();
 			}
 			
 			logger.info(" **** Received " + closed_events.length + " CLosed Events ****");
@@ -171,7 +171,7 @@ public class WsdlNNMConsumer extends ScheduledPollConsumer {
 			logger.debug(genevent.toString());
 			logger.debug(String.format("%d", allevents[i].getModified().getTime() / 1000));
 			
-			logger.info(" **** Create Exchange container");
+			logger.debug(" **** Create Exchange container");
 	        Exchange exchange = getEndpoint().createExchange();
 	        exchange.getIn().setBody(genevent, Event.class);
 	        exchange.getIn().setHeader("EventIdAndStatus", allevents[i].getUuid()+"_"+genevent.getStatus());
