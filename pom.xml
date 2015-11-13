@@ -187,7 +187,7 @@
 						<manifest>
 							<addClasspath>true</addClasspath>
 							<classpathPrefix>lib/</classpathPrefix>
-							<mainClass>ru.atc.camel.networkadvisor.events.Main</mainClass>
+							<mainClass>ru.atc.camel.nnm.events.Main</mainClass>
 						</manifest>
 						<manifestEntries>
 							<Class-Path>.</Class-Path>

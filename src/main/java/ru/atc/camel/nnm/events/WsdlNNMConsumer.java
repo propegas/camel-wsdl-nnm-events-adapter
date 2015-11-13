@@ -22,6 +22,8 @@ import com.hp.ov.nms.sdk.filter.Operator;
 //import com.hp.ov.nms.sdk.incident.GetIncidents;
 import com.hp.ov.nms.sdk.incident.Incident;
 import com.hp.ov.nms.sdk.incident.NmsIncident;
+import com.hp.ov.nms.sdk.nodegroup.NmsNodeGroup;
+import com.hp.ov.nms.sdk.nodegroup.NodeGroup;
 
 import ru.at_consulting.itsm.event.Event;
 import com.hp.ov.nms.sdk.client.SampleClient;
@@ -92,6 +94,32 @@ public class WsdlNNMConsumer extends ScheduledPollConsumer {
 		NmsIncident nmsincident  ;
 		
 		nmsincident = sampleClient.getIncidentService();
+		
+		/*
+		NmsNodeGroup nmsnodegroup = sampleClient.getNodeGroupService();
+		NodeGroup[] nodegroup = nmsnodegroup.getNodeGroupsByNode("25770052276");
+		
+		for(int i=0; i < nodegroup.length; i++){
+
+			NodeGroup node = nodegroup[i];
+			logger.info("getId: " + node.getId());
+			logger.info("getName: " + node.getName());
+			logger.info("getUuid: " + node.getUuid());
+			logger.info("getStatus: " + node.getStatus().toString());
+		}
+		
+		//NmsNodeGroup nmsnodegroup = sampleClient.getNodeGroupService();
+		String[] nodegroup2 = nmsnodegroup.getMemberIds("15032401563");
+		
+		for(int i=0; i < nodegroup2.length; i++){
+
+			String node1 = nodegroup2[i];
+			logger.info("node: " + node1);
+
+		}
+		*/
+		
+		//node[0].
 		//
 		
 		Incident[] events = null;
@@ -99,6 +127,7 @@ public class WsdlNNMConsumer extends ScheduledPollConsumer {
 		//endpoint.getConfiguration().setLasttimestamp(delay);
 		//event.getCreated().getTime() / 1000 
 		long Lasttimestamp = endpoint.getConfiguration().getLasttimestamp();
+		Lasttimestamp = (Lasttimestamp / 1000) * 1000;
 		logger.info(String.format("**** Saved Lasttimestamp: %d", Lasttimestamp));
 		long timestamp = 0;
 		
@@ -131,7 +160,7 @@ public class WsdlNNMConsumer extends ScheduledPollConsumer {
 			Condition cond = new Condition();
 			cond.setName("modified");
 			cond.setValue("" + Lasttimestamp);
-			cond.setOperator(Operator.GT);
+			cond.setOperator(Operator.GE);
 			
 			Condition cond2 = new Condition();
 			cond2.setName("lifecycleState");
