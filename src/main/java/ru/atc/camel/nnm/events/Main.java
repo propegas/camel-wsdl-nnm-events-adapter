@@ -83,6 +83,7 @@ public class Main {
 		    			+ "wsdlapiport={{wsdlapiport}}&"
 		    			+ "wsusername={{wsusername}}&"
 		    			+ "wspassword={{wspassword}}&"
+		    			+ "eventsdump={{eventsdump}}&"
 		    			+ "eventsuri={{eventsuri}}")
 		    	
 		    	//.split(body().convertTo(Event.class));

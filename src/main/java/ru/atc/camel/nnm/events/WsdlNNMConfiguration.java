@@ -20,6 +20,8 @@ public class WsdlNNMConfiguration {
 	
 	private int lastid = 0;
 	
+	private String eventsdump ;
+	
     @UriParam
     private String query;
     
@@ -141,4 +143,14 @@ public class WsdlNNMConfiguration {
 	public void setLasttimestamp(long lasttimestamp) {
 		this.lasttimestamp = lasttimestamp;
 	}
+
+	public String getEventsdump() {
+		return eventsdump;
+	}
+
+	public void setEventsdump(String eventsdump) {
+		this.eventsdump = eventsdump;
+	}
+
+
 }

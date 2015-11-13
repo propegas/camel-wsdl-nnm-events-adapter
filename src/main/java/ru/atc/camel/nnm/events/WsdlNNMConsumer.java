@@ -1,5 +1,9 @@
 package ru.atc.camel.nnm.events;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.sql.Date;
 import java.text.SimpleDateFormat;
 import java.util.regex.Matcher;
@@ -30,6 +34,8 @@ import ru.at_consulting.itsm.event.Event;
 import com.hp.ov.nms.sdk.client.SampleClient;
 
 public class WsdlNNMConsumer extends ScheduledPollConsumer {
+	
+	private String[] openids = { null };
 	
 	private static Logger logger = LoggerFactory.getLogger(Main.class);
 	
@@ -67,6 +73,7 @@ public class WsdlNNMConsumer extends ScheduledPollConsumer {
 	
 	private int processSearchEvents() throws Exception {
 		
+		 int l = openids.length;
 		//Long timestamp;
 		
 		String host = endpoint.getConfiguration().getWsdlapiurl();
@@ -74,163 +81,40 @@ public class WsdlNNMConsumer extends ScheduledPollConsumer {
 		String nnmUser = endpoint.getConfiguration().getWsusername();
 		String nnmPass = endpoint.getConfiguration().getWspassword();
 		
-		Condition cond1 = new Condition();
-		cond1.setName("lifecycleState");
-		cond1.setValue("com.hp.nms.incident.lifecycle.Closed");
-		//cond1.setValue("Closed");
-		cond1.setOperator(Operator.NE);
-		
-		Filter[] subFilters=new Filter[]{ cond1 };
-		Expression existFilter = new Expression();
-		existFilter.setOperator(BooleanOperator.AND);
-		existFilter.setSubFilters(subFilters);
-		
 		SampleClient sampleClient = new SampleClient() ;
-		
 		sampleClient.setHost(host);
 		sampleClient.setPort(port);
 		sampleClient.setNnmPass(nnmPass);
 		sampleClient.setNnmUser(nnmUser);
 		
-		NmsIncident nmsincident  ;
 		
-		nmsincident = sampleClient.getIncidentService();
-		
-		/*
-		NmsNodeGroup nmsnodegroup = sampleClient.getNodeGroupService();
-		NodeGroup[] nodegroup = nmsnodegroup.getNodeGroupsByNode("6442451428");
-		
-		for(int i=0; i < nodegroup.length; i++){
-
-			NodeGroup node = nodegroup[i];
-			logger.info("getId: " + node.getId());
-			logger.info("getName: " + node.getName());
-			logger.info("getUuid: " + node.getUuid());
-			logger.info("getStatus: " + node.getStatus().toString());
-		}
-		*/
-		
-		//NmsNodeGroup nmsnodegroup2 = sampleClient.getNodeGroupService();
-		
-		/*
-		Condition cond3 = new Condition();
-		cond3.setName("s");
-		cond3.setValue("21474890549");
-		//cond1.setValue("Closed");
-		cond3.setOperator(Operator.EQ);
-		
-		Filter[] subFilters2=new Filter[]{ cond3 };
-		Expression existFilter2 = new Expression();
-		existFilter2.setOperator(BooleanOperator.AND);
-		existFilter2.setSubFilters(subFilters2);
-		NodeGroup[] nodegroup3 = nmsnodegroup.getNodeGroups(existFilter2);
-		
-		for(int i=0; i < nodegroup3.length; i++){
-
-			NodeGroup node = nodegroup3[i];
-			logger.info("2 getId: " + node.getId());
-			logger.info("2 getName: " + node.getName());
-			logger.info("2 getUuid: " + node.getUuid());
-			logger.info("2 getStatus: " + node.getStatus().toString());
-		}
-		
-		*/
-		//NmsNodeGroup nmsnodegroup = sampleClient.getNodeGroupService();
-		
-		/*
-		String[] nodegroup2 = nmsnodegroup.getMemberIds("15032401563");
-		
-		for(int i=0; i < nodegroup2.length; i++){
-
-			String node1 = nodegroup2[i];
-			logger.info("node: " + node1);
-
-		}
-		*/
-		
-		//node[0].
-		//
-		
-		Incident[] events = null;
 		
 		//endpoint.getConfiguration().setLasttimestamp(delay);
-		//event.getCreated().getTime() / 1000 
-		long Lasttimestamp = endpoint.getConfiguration().getLasttimestamp();
-		Lasttimestamp = (Lasttimestamp / 1000) * 1000 - 1000;
-		logger.info(String.format("**** Saved Lasttimestamp: %d", Lasttimestamp));
-		long timestamp = 0;
-		
-		
-		try {
-			logger.info(" **** Try to receive Opened Events ");
-			timestamp = System.currentTimeMillis();
-			events = nmsincident.getIncidents(existFilter);
-			
-			
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			logger.debug(" **** Error while receiving Opened Events " );
-			logger.debug( e.getMessage() );
-			//e.printStackTrace();
-		}
-		
-		logger.info(" **** Received " + events.length + " Opened Events ****");
-		
-		
-		
+	
+
 		// get Old closed events
-		Incident[] closed_events = null;
-		if (Lasttimestamp == -1000) {
-			Lasttimestamp = timestamp;
-		}
-		Date date = new Date(Lasttimestamp); 
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z");
-		String formattedDate = sdf.format(date);
-			
-			Condition cond = new Condition();
-			cond.setName("modified");
-			cond.setValue("" + Lasttimestamp);
-			cond.setOperator(Operator.GE);
-			
-			Condition cond2 = new Condition();
-			cond2.setName("lifecycleState");
-			cond2.setValue("com.hp.nms.incident.lifecycle.Closed");
-			//cond1.setValue("Closed");
-			cond2.setOperator(Operator.EQ);
-			
-			subFilters=new Filter[]{ cond, cond2 };
-			existFilter = new Expression();
-			existFilter.setOperator(BooleanOperator.AND);
-			existFilter.setSubFilters(subFilters);
-			
-			try {
-				logger.info(" **** Try to receive Closed Events from " + formattedDate + 
-						" (" + Lasttimestamp + ")");
-				closed_events = nmsincident.getIncidents(existFilter);
-				endpoint.getConfiguration().setLasttimestamp(timestamp);
-				
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				logger.debug(" **** Error while receiving Opened Events " );
-				logger.debug( e.getMessage() );
-				//e.printStackTrace();
-			}
-			
-			logger.info(" **** Received " + closed_events.length + " CLosed Events ****");
-				
-			//closed_events
+		Incident[] closed_events = getClosedEventsById(sampleClient);
 		
+		// get All new (Open) events
+		Incident[] events = getOpenEvents(sampleClient);
+	
 		Incident[] allevents = (Incident[]) ArrayUtils.addAll(events,closed_events);
 		Event genevent = new Event();
 		
 		for(int i=0; i < allevents.length; i++){
-
+			
+			//logger.info("ID: " +  allevents[i].getId());
+			//allevents[i].getCreated().getTime()
+			//logger.info(String.format("TimeCreated: %d", allevents[i].getModified().getTime()));
+			
+			logger.debug(String.format("%d", allevents[i].getModified().getTime() / 1000));
+			
 			genevent = genEventObj(allevents[i]);
 			
 			logger.debug(genevent.toString());
 			logger.debug(String.format("%d", allevents[i].getModified().getTime() / 1000));
 			
-			Cia[] cias = allevents[i].getCias();
+			//Cia[] cias = allevents[i].getCias();
 			
 			//cias[0].
 			
@@ -252,6 +136,210 @@ public class WsdlNNMConsumer extends ScheduledPollConsumer {
         return 1;
 	}
 	
+	private Incident[] getClosedEventsById(SampleClient sampleClient) {
+		// TODO Auto-generated method stub
+		
+		Incident[] closed_events = {};
+		Incident[] allevents = {};
+		/*
+		if (Lasttimestamp == -1000) {
+			Lasttimestamp = timestamp;
+		}
+		
+		Date date = new Date(Lasttimestamp); 
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z");
+		String formattedDate = sdf.format(date);
+		
+		SimpleDateFormat sdf1 = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss");
+		String formattedDate1 = sdf1.format(date);
+		*/
+		NmsIncident nmsincident = null  ;
+		
+		nmsincident = sampleClient.getIncidentService();
+		
+		int event_count = 0;
+		for(int i=0; i < openids.length; i++){
+			Condition cond = new Condition();
+			cond.setName("id");
+			cond.setValue( openids[i] );
+			cond.setOperator(Operator.EQ);
+			
+			Condition cond2 = new Condition();
+			cond2.setName("lifecycleState");
+			cond2.setValue("com.hp.nms.incident.lifecycle.Closed");
+			//cond1.setValue("Closed");
+			cond2.setOperator(Operator.EQ);
+			
+			Filter[] subFilters = new Filter[]{ cond, cond2 };
+			Expression existFilter = new Expression();
+			existFilter.setOperator(BooleanOperator.AND);
+			existFilter.setSubFilters(subFilters);
+			
+			logger.debug(" **** Try to receive Closed Events ***** " );
+			
+			try {
+				logger.debug(" **** Try to receive Closed Events for " + openids[i] );
+				closed_events = nmsincident.getIncidents(existFilter);
+				//endpoint.getConfiguration().setLasttimestamp(timestamp);
+				
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				logger.error(" **** Error while receiving Opened Events " );
+				logger.error( e.getMessage() );
+				//e.printStackTrace();
+			}
+			
+			if (closed_events.length > 0){
+				event_count ++;
+				allevents = (Incident[]) ArrayUtils.addAll(allevents,closed_events);
+			}
+			logger.debug(" **** 1Received " + closed_events.length + " CLosed Events ****");
+			
+		
+			/*
+			String eventsdump = endpoint.getConfiguration().getEventsdump();
+			logger.info(String.format("**** eventsdump: %s", eventsdump));
+					
+			if (eventsdump.compareTo("true") == 0 ){
+				logger.info(String.format("**** eventsdump: %s", eventsdump));
+				dumpEvents(closed_events, "closed", formattedDate1);
+			}
+			*/
+		}
+		
+		logger.info(" **** Received " + event_count + " (" + allevents.length + ") CLosed Events ****");
+		
+		
+		return allevents;
+	}
+
+	private Incident[] getOpenEvents(SampleClient sampleClient) {
+		// TODO Auto-generated method stub
+		
+		Condition cond1 = new Condition();
+		cond1.setName("lifecycleState");
+		cond1.setValue("com.hp.nms.incident.lifecycle.Closed");
+		//cond1.setValue("Closed");
+		cond1.setOperator(Operator.NE);
+		
+		Filter[] subFilters=new Filter[]{ cond1 };
+		Expression existFilter = new Expression();
+		existFilter.setOperator(BooleanOperator.AND);
+		existFilter.setSubFilters(subFilters);
+		
+		NmsIncident nmsincident  ;
+		
+		nmsincident = sampleClient.getIncidentService();
+		
+		String eventsdump = endpoint.getConfiguration().getEventsdump();
+		//logger.info(String.format("**** eventsdump: %s", eventsdump));
+		
+		Incident[] events = {};
+		
+		//event.getCreated().getTime() / 1000 
+		/*
+		long Lasttimestamp = endpoint.getConfiguration().getLasttimestamp();
+		Lasttimestamp = (Lasttimestamp / 1000) * 1000 - 1000;
+		logger.info(String.format("**** Saved Lasttimestamp: %d", Lasttimestamp));
+		long timestamp = 0;
+		*/
+		
+		try {
+			logger.info(" **** Try to receive Opened Events ");
+			//timestamp = System.currentTimeMillis();
+			events = nmsincident.getIncidents(existFilter);
+			
+			
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			logger.error(" **** Error while receiving Opened Events " );
+			logger.error( e.getMessage() );
+			//e.printStackTrace();
+		}
+		
+		logger.info(" **** Received " + events.length + " Opened Events ****");
+		
+		logger.debug(" **** Saving Received opend events's IDs ****");
+		
+		openids = new String[]{ };
+		for(int i=0; i < events.length; i++){
+			openids = (String[]) ArrayUtils.add(openids,events[i].getId());
+			logger.debug(" **** Saving ID: " + events[i].getId());
+		}
+		
+		logger.info(" **** Saved " + openids.length + " Opened Events ****");
+		
+		return events;
+	}
+
+	private void dumpEvents(Incident[] events, String type, String formattedDate) {
+		// TODO Auto-generated method stub
+		logger.info(" **** Dumping " + type + " Events ****");
+		BufferedWriter bw = null;
+		try {
+			bw = new BufferedWriter(new FileWriter(String.format("%s_Events_%s", type, formattedDate),true));
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
+		String text;
+		for(int i=0; i < events.length; i++){
+			text = toStrings(events[i]);
+			
+			try {
+		         // APPEND MODE SET HERE
+			     bw.write(text);
+			     bw.newLine();
+			     bw.flush();
+		    } catch (IOException ioe) {
+		    	ioe.printStackTrace();
+		    } finally {                       
+		    	
+		    // always close the file
+		    
+		    
+		    } // end try/catch/finally
+		 
+			
+		}
+		
+		try {
+			bw.flush();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		finally {
+			// always close the file
+			if (bw != null) try {
+				bw.close();
+			} catch (IOException ioe2) {
+		        // just ignore it
+		    }
+		}
+		
+	}
+
+	private String toStrings(Incident incident) {
+		// TODO Auto-generated method stub
+		String text = "******";
+		text = text + "\ncreated: " + incident.getCreated();
+		text = text + "\nduplicateCount: " + incident.getDuplicateCount();
+		text = text + "\nlastOccurrenceTime: " + incident.getLastOccurrenceTime();
+		text = text + "\nmodified: " + incident.getModified();
+		text = text + "\nformattedMessage: " + incident.getFormattedMessage();
+		text = text + "\nid: " + incident.getId();
+		text = text + "\nuuid: " + incident.getUuid();
+		text = text + "\nseverity: " + incident.getSeverity().name();
+		text = text + "\nsourceNodeName: " + incident.getSourceNodeName();
+		text = text + "\nlifecycleState: " + incident.getLifecycleState();
+		
+		text = text + "\n******\n";
+		
+		return text;
+	}
+
 	private Event genEventObj( Incident event ) {
 		Event genevent = new Event();
 		
