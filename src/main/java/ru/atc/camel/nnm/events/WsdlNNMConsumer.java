@@ -19,6 +19,7 @@ import com.hp.ov.nms.sdk.filter.Condition;
 import com.hp.ov.nms.sdk.filter.Expression;
 import com.hp.ov.nms.sdk.filter.Filter;
 import com.hp.ov.nms.sdk.filter.Operator;
+import com.hp.ov.nms.sdk.incident.Cia;
 //import com.hp.ov.nms.sdk.incident.GetIncidents;
 import com.hp.ov.nms.sdk.incident.Incident;
 import com.hp.ov.nms.sdk.incident.NmsIncident;
@@ -97,7 +98,7 @@ public class WsdlNNMConsumer extends ScheduledPollConsumer {
 		
 		/*
 		NmsNodeGroup nmsnodegroup = sampleClient.getNodeGroupService();
-		NodeGroup[] nodegroup = nmsnodegroup.getNodeGroupsByNode("25770052276");
+		NodeGroup[] nodegroup = nmsnodegroup.getNodeGroupsByNode("6442451428");
 		
 		for(int i=0; i < nodegroup.length; i++){
 
@@ -107,8 +108,36 @@ public class WsdlNNMConsumer extends ScheduledPollConsumer {
 			logger.info("getUuid: " + node.getUuid());
 			logger.info("getStatus: " + node.getStatus().toString());
 		}
+		*/
 		
+		//NmsNodeGroup nmsnodegroup2 = sampleClient.getNodeGroupService();
+		
+		/*
+		Condition cond3 = new Condition();
+		cond3.setName("s");
+		cond3.setValue("21474890549");
+		//cond1.setValue("Closed");
+		cond3.setOperator(Operator.EQ);
+		
+		Filter[] subFilters2=new Filter[]{ cond3 };
+		Expression existFilter2 = new Expression();
+		existFilter2.setOperator(BooleanOperator.AND);
+		existFilter2.setSubFilters(subFilters2);
+		NodeGroup[] nodegroup3 = nmsnodegroup.getNodeGroups(existFilter2);
+		
+		for(int i=0; i < nodegroup3.length; i++){
+
+			NodeGroup node = nodegroup3[i];
+			logger.info("2 getId: " + node.getId());
+			logger.info("2 getName: " + node.getName());
+			logger.info("2 getUuid: " + node.getUuid());
+			logger.info("2 getStatus: " + node.getStatus().toString());
+		}
+		
+		*/
 		//NmsNodeGroup nmsnodegroup = sampleClient.getNodeGroupService();
+		
+		/*
 		String[] nodegroup2 = nmsnodegroup.getMemberIds("15032401563");
 		
 		for(int i=0; i < nodegroup2.length; i++){
@@ -127,7 +156,7 @@ public class WsdlNNMConsumer extends ScheduledPollConsumer {
 		//endpoint.getConfiguration().setLasttimestamp(delay);
 		//event.getCreated().getTime() / 1000 
 		long Lasttimestamp = endpoint.getConfiguration().getLasttimestamp();
-		Lasttimestamp = (Lasttimestamp / 1000) * 1000;
+		Lasttimestamp = (Lasttimestamp / 1000) * 1000 - 1000;
 		logger.info(String.format("**** Saved Lasttimestamp: %d", Lasttimestamp));
 		long timestamp = 0;
 		
@@ -147,15 +176,16 @@ public class WsdlNNMConsumer extends ScheduledPollConsumer {
 		
 		logger.info(" **** Received " + events.length + " Opened Events ****");
 		
-		Date date = new Date(Lasttimestamp); 
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z");
-		String formattedDate = sdf.format(date);
+		
 		
 		// get Old closed events
 		Incident[] closed_events = null;
-		if (Lasttimestamp == 0) {
+		if (Lasttimestamp == -1000) {
 			Lasttimestamp = timestamp;
 		}
+		Date date = new Date(Lasttimestamp); 
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z");
+		String formattedDate = sdf.format(date);
 			
 			Condition cond = new Condition();
 			cond.setName("modified");
@@ -200,10 +230,16 @@ public class WsdlNNMConsumer extends ScheduledPollConsumer {
 			logger.debug(genevent.toString());
 			logger.debug(String.format("%d", allevents[i].getModified().getTime() / 1000));
 			
+			Cia[] cias = allevents[i].getCias();
+			
+			//cias[0].
+			
 			logger.debug(" **** Create Exchange container");
 	        Exchange exchange = getEndpoint().createExchange();
 	        exchange.getIn().setBody(genevent, Event.class);
-	        exchange.getIn().setHeader("EventIdAndStatus", allevents[i].getUuid()+"_"+genevent.getStatus());
+	        exchange.getIn().setHeader("EventIdAndStatus", allevents[i].getUuid() + 
+	        		"_" + allevents[i].getId() + 
+	        		"_" + genevent.getStatus());
 
 	        getProcessor().process(exchange); 
 			
