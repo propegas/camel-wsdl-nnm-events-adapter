@@ -31,6 +31,9 @@ import com.hp.ov.nms.sdk.nodegroup.NmsNodeGroup;
 import com.hp.ov.nms.sdk.nodegroup.NodeGroup;
 
 import ru.at_consulting.itsm.event.Event;
+//import ru.atc.camel.nnm.devices.WsdlNNMConsumer.PersistentEventSeverity;
+//import ru.atc.camel.nnm.devices.WsdlNNMConsumer.PersistentEventSeverity;
+
 import com.hp.ov.nms.sdk.client.SampleClient;
 
 public class WsdlNNMConsumer extends ScheduledPollConsumer {
@@ -65,78 +68,158 @@ public class WsdlNNMConsumer extends ScheduledPollConsumer {
 		
 		String operationPath = endpoint.getOperationPath();
 		
-		if (operationPath.equals("events")) return processSearchEvents();
+		if (operationPath.equals("events")) {
+			beforePoll(10000);
+			return processSearchEvents();
+		}
 		
 		// only one operation implemented for now !
 		throw new IllegalArgumentException("Incorrect operation: " + operationPath);
 	}
 	
+	@Override
+	public long beforePoll(long timeout) throws Exception {
+		
+		logger.info("*** Before Poll!!!");
+		// only one operation implemented for now !
+		//throw new IllegalArgumentException("Incorrect operation: ");
+		
+		//send HEARTBEAT
+		genHeartbeatMessage();
+		
+		return timeout;
+	}
+
 	private int processSearchEvents() throws Exception {
 		
-		 int l = openids.length;
-		//Long timestamp;
+		try {
 		
-		String host = endpoint.getConfiguration().getWsdlapiurl();
-		int port = endpoint.getConfiguration().getWsdlapiport();
-		String nnmUser = endpoint.getConfiguration().getWsusername();
-		String nnmPass = endpoint.getConfiguration().getWspassword();
+			int l = openids.length;
+			//Long timestamp;
+			
+			String host = endpoint.getConfiguration().getWsdlapiurl();
+			int port = endpoint.getConfiguration().getWsdlapiport();
+			String nnmUser = endpoint.getConfiguration().getWsusername();
+			String nnmPass = endpoint.getConfiguration().getWspassword();
+			
+			SampleClient sampleClient = new SampleClient() ;
+			sampleClient.setHost(host);
+			sampleClient.setPort(port);
+			sampleClient.setNnmPass(nnmPass);
+			sampleClient.setNnmUser(nnmUser);
+			
+			
+			
+			//endpoint.getConfiguration().setLasttimestamp(delay);
 		
-		SampleClient sampleClient = new SampleClient() ;
-		sampleClient.setHost(host);
-		sampleClient.setPort(port);
-		sampleClient.setNnmPass(nnmPass);
-		sampleClient.setNnmUser(nnmUser);
-		
-		
-		
-		//endpoint.getConfiguration().setLasttimestamp(delay);
 	
-
-		// get Old closed events
-		Incident[] closed_events = getClosedEventsById(sampleClient);
+			// get Old closed events
+			Incident[] closed_events = getClosedEventsById(sampleClient);
+			
+			// get All new (Open) events
+			Incident[] events = getOpenEvents(sampleClient);
 		
-		// get All new (Open) events
-		Incident[] events = getOpenEvents(sampleClient);
+			Incident[] allevents = (Incident[]) ArrayUtils.addAll(events,closed_events);
+			Event genevent = new Event();
+			
+			for(int i=0; i < allevents.length; i++){
+				
+				//logger.info("ID: " +  allevents[i].getId());
+				//allevents[i].getCreated().getTime()
+				//logger.info(String.format("TimeCreated: %d", allevents[i].getModified().getTime()));
+				
+				logger.debug(String.format("%d", allevents[i].getModified().getTime() / 1000));
+				
+				genevent = genEventObj(allevents[i]);
+				
+				logger.debug(genevent.toString());
+				logger.debug(String.format("%d", allevents[i].getModified().getTime() / 1000));
+				
+				//Cia[] cias = allevents[i].getCias();
+				
+				//cias[0].
+				
+				logger.debug(" **** Create Exchange container");
+		        Exchange exchange = getEndpoint().createExchange();
+		        exchange.getIn().setBody(genevent, Event.class);
+		        exchange.getIn().setHeader("EventIdAndStatus", allevents[i].getUuid() + 
+		        		"_" + allevents[i].getId() + 
+		        		"_" + genevent.getStatus());
 	
-		Incident[] allevents = (Incident[]) ArrayUtils.addAll(events,closed_events);
-		Event genevent = new Event();
-		
-		for(int i=0; i < allevents.length; i++){
+		        getProcessor().process(exchange); 
+				
+			}
 			
-			//logger.info("ID: " +  allevents[i].getId());
-			//allevents[i].getCreated().getTime()
-			//logger.info(String.format("TimeCreated: %d", allevents[i].getModified().getTime()));
-			
-			logger.debug(String.format("%d", allevents[i].getModified().getTime() / 1000));
-			
-			genevent = genEventObj(allevents[i]);
-			
-			logger.debug(genevent.toString());
-			logger.debug(String.format("%d", allevents[i].getModified().getTime() / 1000));
-			
-			//Cia[] cias = allevents[i].getCias();
-			
-			//cias[0].
-			
-			logger.debug(" **** Create Exchange container");
-	        Exchange exchange = getEndpoint().createExchange();
-	        exchange.getIn().setBody(genevent, Event.class);
-	        exchange.getIn().setHeader("EventIdAndStatus", allevents[i].getUuid() + 
-	        		"_" + allevents[i].getId() + 
-	        		"_" + genevent.getStatus());
-
-	        getProcessor().process(exchange); 
-			
+		} catch (Throwable e) { //send error message to the same queue
+			// TODO Auto-generated catch block
+			String.format("Error while execution: %s ", e);
+			genErrorMessage(e.getMessage());
+			return 0;
 		}
-		
-		
 		
 		
         
         return 1;
 	}
 	
-	private Incident[] getClosedEventsById(SampleClient sampleClient) {
+	private void genErrorMessage(String message) {
+		// TODO Auto-generated method stub
+		long timestamp = System.currentTimeMillis();
+		timestamp = timestamp / 1000;
+		String textError = "Возникла ошибка при работе адаптера: ";
+		Event genevent = new Event();
+		genevent.setMessage(textError + message);
+		genevent.setEventCategory("ADAPTER");
+		genevent.setSeverity(PersistentEventSeverity.CRITICAL.name());
+		genevent.setTimestamp(timestamp);
+		genevent.setEventsource("NNM_EVENTS_ADAPTER");
+		
+		logger.info(" **** Create Exchange for Error Message container");
+        Exchange exchange = getEndpoint().createExchange();
+        exchange.getIn().setBody(genevent, Event.class);
+        
+        exchange.getIn().setHeader("Timestamp", timestamp);
+        exchange.getIn().setHeader("queueName", "Events");
+
+        try {
+			getProcessor().process(exchange);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
+		
+	}
+
+	
+	private void genHeartbeatMessage() {
+		// TODO Auto-generated method stub
+		long timestamp = System.currentTimeMillis();
+		timestamp = timestamp / 1000;
+		//String textError = "Возникла ошибка при работе адаптера: ";
+		Event genevent = new Event();
+		genevent.setMessage("Сигнал HEARTBEAT от адаптера");
+		genevent.setEventCategory("ADAPTER");
+		genevent.setObject("HEARTBEAT");
+		genevent.setSeverity(PersistentEventSeverity.OK.name());
+		genevent.setTimestamp(timestamp);
+		genevent.setEventsource("NNM_DEVICE_ADAPTER");
+		
+		logger.info(" **** Create Exchange for Heartbeat Message container");
+        Exchange exchange = getEndpoint().createExchange();
+        exchange.getIn().setBody(genevent, Event.class);
+        
+        exchange.getIn().setHeader("Timestamp", timestamp);
+        exchange.getIn().setHeader("queueName", "Events");
+
+        try {
+			getProcessor().process(exchange);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
+	}
+	
+	private Incident[] getClosedEventsById(SampleClient sampleClient) throws Exception {
 		// TODO Auto-generated method stub
 		
 		Incident[] closed_events = {};
@@ -185,7 +268,8 @@ public class WsdlNNMConsumer extends ScheduledPollConsumer {
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				logger.error(" **** Error while receiving Opened Events " );
-				logger.error( e.getMessage() );
+				//String.format("Error while SQL execution: %s ", e);
+				throw new Error("Error while receiving Opened Events. " + e.getMessage());
 				//e.printStackTrace();
 			}
 			
@@ -213,7 +297,7 @@ public class WsdlNNMConsumer extends ScheduledPollConsumer {
 		return allevents;
 	}
 
-	private Incident[] getOpenEvents(SampleClient sampleClient) {
+	private Incident[] getOpenEvents(SampleClient sampleClient) throws Exception {
 		// TODO Auto-generated method stub
 		
 		Condition cond1 = new Condition();
@@ -253,7 +337,8 @@ public class WsdlNNMConsumer extends ScheduledPollConsumer {
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			logger.error(" **** Error while receiving Opened Events " );
-			logger.error( e.getMessage() );
+			//String.format("Error while SQL execution: %s ", e);
+			throw new Error("Error while receiving Opened Events. " +  e.getMessage());
 			//e.printStackTrace();
 		}
 		
