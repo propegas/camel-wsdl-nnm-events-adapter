@@ -178,6 +178,7 @@ public class WsdlNNMConsumer extends ScheduledPollConsumer {
         Exchange exchange = getEndpoint().createExchange();
         exchange.getIn().setBody(genevent, Event.class);
         
+        exchange.getIn().setHeader("EventIdAndStatus", "Error_" +timestamp);
         exchange.getIn().setHeader("Timestamp", timestamp);
         exchange.getIn().setHeader("queueName", "Events");
 
@@ -208,6 +209,7 @@ public class WsdlNNMConsumer extends ScheduledPollConsumer {
         Exchange exchange = getEndpoint().createExchange();
         exchange.getIn().setBody(genevent, Event.class);
         
+        exchange.getIn().setHeader("EventIdAndStatus", "Heartbeat_" + timestamp);
         exchange.getIn().setHeader("Timestamp", timestamp);
         exchange.getIn().setHeader("queueName", "Events");
 
