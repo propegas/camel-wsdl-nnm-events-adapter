@@ -34,6 +34,7 @@ import com.hp.ov.nms.sdk.nodegroup.NodeGroup;
 import ru.at_consulting.itsm.event.Event;
 //import ru.atc.camel.nnm.devices.WsdlNNMConsumer.PersistentEventSeverity;
 //import ru.atc.camel.nnm.devices.WsdlNNMConsumer.PersistentEventSeverity;
+//import ru.atc.camel.nnm.devices.WsdlNNMConsumer.PersistentEventSeverity;
 
 import com.hp.ov.nms.sdk.client.SampleClient;
 
@@ -71,7 +72,7 @@ public class WsdlNNMConsumer extends ScheduledPollConsumer {
 		String operationPath = endpoint.getOperationPath();
 		
 		if (operationPath.equals("events")) {
-			beforePoll(10000);
+			//beforePoll(10000);
 			return processSearchEvents();
 		}
 		
@@ -87,7 +88,7 @@ public class WsdlNNMConsumer extends ScheduledPollConsumer {
 		//throw new IllegalArgumentException("Incorrect operation: ");
 		
 		//send HEARTBEAT
-		genHeartbeatMessage();
+		genHeartbeatMessage(getEndpoint().createExchange());
 		
 		return timeout;
 	}
@@ -194,7 +195,7 @@ public class WsdlNNMConsumer extends ScheduledPollConsumer {
 	}
 
 	
-	private void genHeartbeatMessage() {
+	public static void genHeartbeatMessage(Exchange exchange) {
 		// TODO Auto-generated method stub
 		long timestamp = System.currentTimeMillis();
 		timestamp = timestamp / 1000;
@@ -208,18 +209,19 @@ public class WsdlNNMConsumer extends ScheduledPollConsumer {
 		genevent.setEventsource("NNM_DEVICE_ADAPTER");
 		
 		logger.info(" **** Create Exchange for Heartbeat Message container");
-        Exchange exchange = getEndpoint().createExchange();
+        //Exchange exchange = getEndpoint().createExchange();
         exchange.getIn().setBody(genevent, Event.class);
         
-        exchange.getIn().setHeader("EventIdAndStatus", "Heartbeat_" + timestamp);
         exchange.getIn().setHeader("Timestamp", timestamp);
         exchange.getIn().setHeader("queueName", "Events");
 
         try {
-			getProcessor().process(exchange);
+        	//Processor processor = getProcessor();
+        	//.process(exchange);
+        	//processor.process(exchange);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			//e.printStackTrace();
 		} 
 	}
 	
