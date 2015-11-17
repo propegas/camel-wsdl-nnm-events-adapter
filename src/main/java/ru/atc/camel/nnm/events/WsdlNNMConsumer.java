@@ -6,6 +6,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.Date;
 import java.text.SimpleDateFormat;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -60,6 +61,7 @@ public class WsdlNNMConsumer extends ScheduledPollConsumer {
         super(endpoint, processor);
         this.endpoint = endpoint;
         //this.afterPoll();
+        this.setTimeUnit(TimeUnit.MINUTES);
         this.setDelay(endpoint.getConfiguration().getDelay());
 	}
 	
