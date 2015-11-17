@@ -102,7 +102,7 @@ public class Main {
 		    		.marshal(myJson)
 		    	//.marshal(myJaxb)
 		    		//.log("${id} ${header.EventIdAndStatus}")
-		    		.to("activemq:{{eventsqueue}}e")
+		    		.to("activemq:{{eventsqueue}}")
 					.log("*** NEW EVENT: ${id} ${header.EventIdAndStatus}");
 				
 				
