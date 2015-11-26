@@ -207,7 +207,7 @@ public class WsdlNNMConsumer extends ScheduledPollConsumer {
 		genevent.setObject("HEARTBEAT");
 		genevent.setSeverity(PersistentEventSeverity.OK.name());
 		genevent.setTimestamp(timestamp);
-		genevent.setEventsource("NNM_DEVICE_ADAPTER");
+		genevent.setEventsource("NNM_EVENT_ADAPTER");
 		
 		logger.info(" **** Create Exchange for Heartbeat Message container");
         //Exchange exchange = getEndpoint().createExchange();
