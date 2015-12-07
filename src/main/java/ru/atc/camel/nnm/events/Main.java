@@ -39,7 +39,7 @@ public class Main {
 			activemq_ip = "172.20.19.195";
 		
 		logger.info("activemq_ip: " + activemq_ip);
-		logger.info("sdce_port: " + activemq_port);
+		logger.info("activemq_port: " + activemq_port);
 		
 		org.apache.camel.main.Main main = new org.apache.camel.main.Main();
 		main.enableHangupSupport();
@@ -116,7 +116,7 @@ public class Main {
 				})
 				//.bean(WsdlNNMConsumer.class, "genHeartbeatMessage", exchange)
 		        .marshal(myJson)
-		        .to("activemq:{{eventsqueue}}")
+		        .to("activemq:{{heartbeatsqueue}}")
 				.log("*** Heartbeat: ${id}");
 				
 				}

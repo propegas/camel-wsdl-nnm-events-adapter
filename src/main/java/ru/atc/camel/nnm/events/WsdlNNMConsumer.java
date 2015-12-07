@@ -111,12 +111,7 @@ public class WsdlNNMConsumer extends ScheduledPollConsumer {
 			sampleClient.setPort(port);
 			sampleClient.setNnmPass(nnmPass);
 			sampleClient.setNnmUser(nnmUser);
-			
-			
-			
-			//endpoint.getConfiguration().setLasttimestamp(delay);
-		
-	
+
 			// get Old closed events
 			Incident[] closed_events = getClosedEventsById(sampleClient);
 			
