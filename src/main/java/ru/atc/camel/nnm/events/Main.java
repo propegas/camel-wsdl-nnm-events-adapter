@@ -90,6 +90,8 @@ public class Main {
 		    			+ "wsusername={{wsusername}}&"
 		    			+ "wspassword={{wspassword}}&"
 		    			+ "eventsdump={{eventsdump}}&"
+		    			+ "source={{source}}&"
+		    			+ "adaptername={{adaptername}}&"
 		    			+ "eventsuri={{eventsuri}}")
 		    	
 

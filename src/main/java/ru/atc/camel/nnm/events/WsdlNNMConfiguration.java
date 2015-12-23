@@ -12,6 +12,10 @@ public class WsdlNNMConfiguration {
 	
 	private String wsdlapiurl;
 	
+	private String source;
+	
+	private String adaptername;
+	
 	private int wsdlapiport;
 	
 	private long lasttimestamp;
@@ -150,6 +154,22 @@ public class WsdlNNMConfiguration {
 
 	public void setEventsdump(String eventsdump) {
 		this.eventsdump = eventsdump;
+	}
+
+	public String getSource() {
+		return source;
+	}
+
+	public void setSource(String source) {
+		this.source = source;
+	}
+
+	public String getAdaptername() {
+		return adaptername;
+	}
+
+	public void setAdaptername(String adaptername) {
+		this.adaptername = adaptername;
 	}
 
 

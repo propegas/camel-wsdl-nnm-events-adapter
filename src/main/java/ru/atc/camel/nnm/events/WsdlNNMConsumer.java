@@ -44,7 +44,7 @@ public class WsdlNNMConsumer extends ScheduledPollConsumer {
 	
 	private static Logger logger = LoggerFactory.getLogger(Main.class);
 	
-	private WsdlNNMEndpoint endpoint;
+	private static WsdlNNMEndpoint endpoint;
 	
 	public enum PersistentEventSeverity {
 	    OK, INFO, WARNING, MINOR, MAJOR, CRITICAL;
@@ -60,7 +60,7 @@ public class WsdlNNMConsumer extends ScheduledPollConsumer {
 
 	public WsdlNNMConsumer(WsdlNNMEndpoint endpoint, Processor processor) {
         super(endpoint, processor);
-        this.endpoint = endpoint;
+        WsdlNNMConsumer.endpoint = endpoint;
         //this.afterPoll();
         this.setTimeUnit(TimeUnit.MINUTES);
         this.setInitialDelay(0);
@@ -171,7 +171,7 @@ public class WsdlNNMConsumer extends ScheduledPollConsumer {
 		genevent.setEventCategory("ADAPTER");
 		genevent.setSeverity(PersistentEventSeverity.CRITICAL.name());
 		genevent.setTimestamp(timestamp);
-		genevent.setEventsource("NNM_EVENTS_ADAPTER");
+		genevent.setEventsource(String.format("%s", endpoint.getConfiguration().getAdaptername()));
 		genevent.setStatus("OPEN");
 		genevent.setHost("adapter");
 		
@@ -204,7 +204,8 @@ public class WsdlNNMConsumer extends ScheduledPollConsumer {
 		genevent.setObject("HEARTBEAT");
 		genevent.setSeverity(PersistentEventSeverity.OK.name());
 		genevent.setTimestamp(timestamp);
-		genevent.setEventsource("NNM_EVENT_ADAPTER");
+		genevent.setEventsource(String.format("%s", endpoint.getConfiguration().getAdaptername()));
+
 		
 		logger.info(" **** Create Exchange for Heartbeat Message container");
         //Exchange exchange = getEndpoint().createExchange();
@@ -450,7 +451,9 @@ public class WsdlNNMConsumer extends ScheduledPollConsumer {
 		genevent.setEventCategory(event.getCategory());
 		
 		genevent.setTimestamp(event.getCreated().getTime() / 1000 );
-		genevent.setEventsource("NNM");
+		
+		String source = endpoint.getConfiguration().getSource();
+		genevent.setEventsource(source);
 		genevent.setService("NNM");
 		genevent.setCi(event.getSourceNodeUuid());
 		//System.out.println(event.toString());
