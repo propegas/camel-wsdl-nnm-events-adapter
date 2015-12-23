@@ -91,8 +91,7 @@ public class Main {
 		    			+ "wspassword={{wspassword}}&"
 		    			+ "eventsdump={{eventsdump}}&"
 		    			+ "source={{source}}&"
-		    			+ "adaptername={{adaptername}}&"
-		    			+ "eventsuri={{eventsuri}}")
+		    			+ "adaptername={{adaptername}}")
 		    	
 
 				.idempotentConsumer(
