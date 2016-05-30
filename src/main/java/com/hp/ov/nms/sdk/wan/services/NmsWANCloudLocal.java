@@ -4,12 +4,10 @@
  */
 package com.hp.ov.nms.sdk.wan.services;
 
-import javax.ejb.Local;
-
 /**
  *
  * @author haswellj
  */
-@Local
+
 public interface NmsWANCloudLocal extends NmsWANCloud {
 }

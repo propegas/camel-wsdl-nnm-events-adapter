@@ -18,24 +18,8 @@
  */
 package com.hp.ov.nms.sdk.inventory;
 
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Logger;
-
-import org.jboss.ejb3.annotation.Management;
-import org.jboss.ejb3.annotation.Service;
-
 import com.hp.ov.nms.sdk.client.SampleClient;
-import com.hp.ov.nms.sdk.filter.BooleanOperator;
-import com.hp.ov.nms.sdk.filter.Condition;
-import com.hp.ov.nms.sdk.filter.Constraint;
-import com.hp.ov.nms.sdk.filter.Expression;
-import com.hp.ov.nms.sdk.filter.Filter;
-import com.hp.ov.nms.sdk.filter.Operator;
+import com.hp.ov.nms.sdk.filter.*;
 import com.hp.ov.nms.sdk.iface.Interface;
 import com.hp.ov.nms.sdk.iface.InterfaceConclusion;
 import com.hp.ov.nms.sdk.iface.NmsInterfaceException;
@@ -62,15 +46,18 @@ import com.hp.ov.nms.sdk.vlan.NmsVLANException;
 import com.hp.ov.nms.sdk.vlan.Port;
 import com.hp.ov.nms.sdk.vlan.VLAN;
 
+import java.lang.reflect.Method;
+import java.util.*;
+import java.util.logging.Logger;
+
 /**
  * JMX-Console management bean for Inventory services.
  *
  */
-@Service(objectName = "com.hp.ov.nms.sdk.inventory:mbean=InventoryClient")
-@Management(InventoryClientMBean.class)
+
+
 public class InventoryClient extends SampleClient implements InventoryClientMBean {
     private static final Logger log = Logger.getLogger(InventoryClient.class.getName());
-    private String previousId="0";
     int count=0;
     int filterIndex=0;
     Filter[] incidentFilters=null;
@@ -82,6 +69,7 @@ public class InventoryClient extends SampleClient implements InventoryClientMBea
     Filter[] connectionFilters=null;
     Filter[] vlanFilters=null;
     Filter[] mibFilters=null;
+    private String previousId = "0";
 
     public InventoryClient() {
         //Create some canned filters to do quick tests from JMX-Console.

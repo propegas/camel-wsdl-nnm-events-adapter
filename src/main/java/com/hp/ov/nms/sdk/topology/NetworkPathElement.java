@@ -2,7 +2,7 @@ package com.hp.ov.nms.sdk.topology;
 
 import java.io.Serializable;
 
-import com.hp.ov.nms.path.pojo.NmsPathElement;
+//import com.hp.ov.nms.path.pojo.NmsPathElement;
 
 public class NetworkPathElement implements Serializable {
     private PathElementType elementType;

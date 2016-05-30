@@ -1,11 +1,9 @@
 package com.hp.ov.nms.sdk.phys;
 
-import javax.ejb.Local;
-
 import com.hp.ov.nms.sdk.filter.Filter;
 import com.hp.ov.nms.sdk.inventory.Capability;
 
-@Local
+
 public interface NmsPortLocal {
 	/**
 	 * Get all filtered ports

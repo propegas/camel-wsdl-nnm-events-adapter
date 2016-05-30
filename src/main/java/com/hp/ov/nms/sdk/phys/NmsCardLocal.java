@@ -1,6 +1,6 @@
 package com.hp.ov.nms.sdk.phys;
 
-import javax.ejb.Local;
+//
 
 import com.hp.ov.nms.sdk.filter.Filter;
 import com.hp.ov.nms.sdk.incident.IncidentConclusion;
@@ -8,7 +8,7 @@ import com.hp.ov.nms.sdk.inventory.Capability;
 import com.hp.ov.nms.sdk.inventory.ManagementMode;
 import com.hp.ov.nms.sdk.inventory.Status;
 
-@Local
+//
 public interface NmsCardLocal {
 	/**
 	 * Get all filtered cards

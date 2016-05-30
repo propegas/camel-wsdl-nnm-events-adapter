@@ -1,30 +1,13 @@
 package com.hp.ov.nms.sdk.incidentconfig;
 
-import java.util.logging.Logger;
-
-import org.jboss.ejb3.annotation.Management;
-import org.jboss.ejb3.annotation.Service;
-
 import com.hp.ov.nms.sdk.client.SampleClient;
 import com.hp.ov.nms.sdk.filter.Constraint;
 import com.hp.ov.nms.sdk.filter.Filter;
-import com.hp.ov.nms.sdk.incidentconfiguration.ActionConfig;
-import com.hp.ov.nms.sdk.incidentconfiguration.ComparisonParam;
-import com.hp.ov.nms.sdk.incidentconfiguration.DedupConfig;
-import com.hp.ov.nms.sdk.incidentconfiguration.IncidentConfig;
-import com.hp.ov.nms.sdk.incidentconfiguration.LifecycleTransitionAction;
-import com.hp.ov.nms.sdk.incidentconfiguration.ManagementEventConfig;
-import com.hp.ov.nms.sdk.incidentconfiguration.NmsIncidentConfig;
-import com.hp.ov.nms.sdk.incidentconfiguration.NmsIncidentConfigException;
-import com.hp.ov.nms.sdk.incidentconfiguration.PairItem;
-import com.hp.ov.nms.sdk.incidentconfiguration.PairwiseConfig;
-import com.hp.ov.nms.sdk.incidentconfiguration.RateConfig;
-import com.hp.ov.nms.sdk.incidentconfiguration.RemoteNNMEventConfig;
-import com.hp.ov.nms.sdk.incidentconfiguration.SnmpTrapConfig;
+import com.hp.ov.nms.sdk.incidentconfiguration.*;
+
+import java.util.logging.Logger;
 
 
-@Service(objectName = "com.hp.ov.nms.sdk.incidentconfig:mbean=IncidentConfigClient")
-@Management(IncidentConfigClientMBean.class)
 public class IncidentConfigClient extends SampleClient implements IncidentConfigClientMBean {
     private static final Logger log = Logger.getLogger(IncidentConfigClient.class.getName());
     protected   int filterIndex=0;

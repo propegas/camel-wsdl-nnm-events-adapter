@@ -1,8 +1,5 @@
 package ru.atc.camel.nnm.events;
 
-import java.io.File;
-import javax.jms.ConnectionFactory;
-
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -11,17 +8,20 @@ import org.apache.camel.component.jms.JmsComponent;
 import org.apache.camel.component.properties.PropertiesComponent;
 import org.apache.camel.model.dataformat.JsonDataFormat;
 import org.apache.camel.model.dataformat.JsonLibrary;
+import org.apache.camel.processor.idempotent.FileIdempotentRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.camel.processor.idempotent.FileIdempotentRepository;
 import ru.at_consulting.itsm.event.Event;
-import ru.atc.camel.nnm.events.WsdlNNMConsumer;
+
+import javax.jms.ConnectionFactory;
+import java.io.File;
 
 public class Main {
-	
-	private static Logger logger = LoggerFactory.getLogger(Main.class);
+
 	public static String activemq_port = null;
 	public static String activemq_ip = null;
+	private static Logger logger = LoggerFactory.getLogger(Main.class);
+
 	public static void main(String[] args) throws Exception {
 		
 		logger.info("Starting Custom Apache Camel component example");
@@ -62,7 +62,8 @@ public class Main {
 				JsonDataFormat myJson = new JsonDataFormat();
 				myJson.setPrettyPrint(true);
 				myJson.setLibrary(JsonLibrary.Jackson);
-				myJson.setJsonView(Event.class);
+				myJson.setAllowJmsType(true);
+				myJson.setUnmarshalType(Event.class);
 				//myJson.setPrettyPrint(true);
 				
 				PropertiesComponent properties = new PropertiesComponent();
@@ -80,9 +81,6 @@ public class Main {
 		        File cachefile = new File("sendedEvents.dat");
 		        cachefile.createNewFile();
 		        
-		     
-				
-						        
 				from("wsdlnnm://events?"
 		    			+ "delay={{delay}}&"
 		    			+ "wsdlapiurl={{wsdlapiurl}}&"
@@ -92,16 +90,25 @@ public class Main {
 		    			+ "eventsdump={{eventsdump}}&"
 		    			+ "source={{source}}&"
 		    			+ "adaptername={{adaptername}}")
-		    	
 
-				.idempotentConsumer(
-			             header("EventIdAndStatus"),
+						.choice()
+						.when(header("Type").isEqualTo("Error"))
+						.marshal(myJson)
+						//.transform(body().convertToString())
+						//.unmarshal(myJson)
+						.to("activemq:{{eventsqueue}}")
+						.log("Error: ${id} ${header.EventUniqId}")
+
+						.otherwise()
+						.idempotentConsumer(
+								header("EventIdAndStatus"),
 			             FileIdempotentRepository.fileIdempotentRepository(cachefile, 2000, 51200000)
 			             )
-				
 
-		    		.marshal(myJson)
-		    	//.marshal(myJaxb)
+
+						.marshal(myJson)
+						//.transform(body().convertToString())
+						//.marshal(myJaxb)
 		    		//.log("${id} ${header.EventIdAndStatus}")
 		    		.to("activemq:{{eventsqueue}}")
 					.log("*** NEW EVENT: ${id} ${header.EventIdAndStatus}");

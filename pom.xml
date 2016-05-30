@@ -1,13 +1,15 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>ru.atc.monitoring</groupId>
 	<artifactId>camel-wsdl-nnm-adapter</artifactId>
-	<version>0.3-SNAPSHOT</version>
+	<version>0.3.2-SNAPSHOT</version>
 	
 	<properties>
+		<version>0.6.5-SNAPSHOT</version>
  		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
- 		<camel-version>2.15.3</camel-version>
+		<camel-version>2.16.2</camel-version>
+		<project.build.targetName>camelNNMv2</project.build.targetName>
 	</properties>
 
 	<dependencies>
@@ -101,8 +103,8 @@
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
 			<version>1.7.12</version>
-		</dependency>		
-		
+		</dependency>
+
 	</dependencies>
 
 	<build>
@@ -170,7 +172,8 @@
 							<goal>copy-dependencies</goal>
 						</goals>
 						<configuration>
-							<outputDirectory>${project.build.directory}/CamelNNMv2/lib</outputDirectory>
+							<outputDirectory>${project.build.directory}/${project.build.targetName}/lib
+							</outputDirectory>
 							<overWriteReleases>false</overWriteReleases>
 							<overWriteSnapshots>false</overWriteSnapshots>
 							<overWriteIfNewer>true</overWriteIfNewer>
@@ -193,8 +196,8 @@
 							<Class-Path>.</Class-Path>
 						</manifestEntries>
 					</archive>
- 
-					<finalName>CamelNNMv2/CamelNNMv2</finalName>
+
+					<finalName>${project.build.targetName}/${project.build.targetName}-${project.version}</finalName>
 				</configuration>
 			</plugin>
 			

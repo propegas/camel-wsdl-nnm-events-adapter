@@ -1,10 +1,9 @@
 package com.hp.ov.nms.sdk.nodegroup;
 
-import javax.ejb.Local;
 
 import com.hp.ov.nms.sdk.filter.Filter;
 
-@Local
+
 public interface NmsNodeGroupLocal {
 	NodeGroup[] getNodeGroups(Filter filter) throws NmsNodeGroupException;
 	/**

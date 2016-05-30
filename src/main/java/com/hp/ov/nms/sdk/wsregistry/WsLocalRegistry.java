@@ -2,9 +2,7 @@ package com.hp.ov.nms.sdk.wsregistry;
 
 import java.net.URL;
 
-import javax.ejb.Local;
 
-@Local
 public interface WsLocalRegistry {
 	/**
 	 * Register an entry into the Web Service registry

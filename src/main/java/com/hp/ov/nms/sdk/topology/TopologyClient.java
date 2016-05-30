@@ -18,12 +18,9 @@
  */
 package com.hp.ov.nms.sdk.topology;
 
-import java.util.logging.Logger;
-
-import org.jboss.ejb3.annotation.Management;
-import org.jboss.ejb3.annotation.Service;
-
 import com.hp.ov.nms.sdk.client.SampleClient;
+
+import java.util.logging.Logger;
 
 /**
  * JMX-Console management bean for the Topology service.
@@ -31,8 +28,8 @@ import com.hp.ov.nms.sdk.client.SampleClient;
  * @author Jamie Sampey
  *
  */
-@Service(objectName="com.hp.ov.nms.sdk.topology:mbean=TopologyClient")
-@Management(TopologyClientMBean.class)
+
+
 public class TopologyClient extends SampleClient implements TopologyClientMBean {
     private static final Logger log = Logger.getLogger(TopologyClient.class.getName());
 

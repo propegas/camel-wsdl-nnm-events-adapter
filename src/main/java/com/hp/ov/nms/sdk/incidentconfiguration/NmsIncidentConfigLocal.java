@@ -1,10 +1,8 @@
 package com.hp.ov.nms.sdk.incidentconfiguration;
 
-import javax.ejb.Local;
-
 import com.hp.ov.nms.sdk.filter.Filter;
 
-@Local
+
 public interface NmsIncidentConfigLocal {
 
     //IncidentConfig[] getConfigurations(Filter filter)throws NmsIncidentConfigException;

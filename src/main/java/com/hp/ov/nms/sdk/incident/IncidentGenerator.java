@@ -18,19 +18,10 @@
  */
 package com.hp.ov.nms.sdk.incident;
 
-import java.util.Date;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.management.MBeanServer;
-import javax.management.ObjectName;
-
-import org.jboss.ejb3.annotation.Management;
-import org.jboss.ejb3.annotation.Service;
-
 import com.hp.ov.nms.sdk.client.SampleClient;
-import javax.naming.Context;
-import javax.naming.InitialContext;
+
+import java.util.Date;
+import java.util.logging.Logger;
 
 /**
  * JMX-Console management bean for IncidentGenerator client for NmsIncident Service.
@@ -39,8 +30,8 @@ import javax.naming.InitialContext;
  *
  */
 
-@Service(objectName = "com.hp.ov.nms.sdk.incident:mbean=IncidentGenerator")
-@Management(IncidentGeneratorMBean.class)
+//
+//
 public class IncidentGenerator extends SampleClient implements IncidentGeneratorMBean {
     private static final Logger LOGGER = Logger.getLogger(IncidentGenerator.class.getName());
     private String sourceNodeUuid;

@@ -1,10 +1,8 @@
 package com.hp.ov.nms.sdk.incident;
 
-import javax.ejb.Local;
-
 import com.hp.ov.nms.sdk.filter.Filter;
 
-@Local
+//
 public interface NmsIncidentLocal {
     Incident[] getIncidents(Filter filter) throws NmsIncidentException;
     Integer getIncidentCount(Filter filter) throws NmsIncidentException;

@@ -18,8 +18,6 @@
  */
 package com.hp.ov.nms.sdk.topology;
 
-import org.jboss.ejb3.annotation.Management;
-
 import com.hp.ov.nms.sdk.client.SampleClientMBean;
 
 /**
@@ -28,7 +26,7 @@ import com.hp.ov.nms.sdk.client.SampleClientMBean;
  * @author Jamie Sampey
  *
  */
-@Management
+
 public interface TopologyClientMBean extends SampleClientMBean {
     String getPath(String startNode, String endNode);
 }

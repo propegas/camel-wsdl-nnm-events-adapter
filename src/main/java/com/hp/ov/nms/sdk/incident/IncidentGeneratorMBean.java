@@ -18,8 +18,6 @@
  */
 package com.hp.ov.nms.sdk.incident;
 
-import org.jboss.ejb3.annotation.Management;
-
 import com.hp.ov.nms.sdk.client.SampleClientMBean;
 
 /**
@@ -28,7 +26,7 @@ import com.hp.ov.nms.sdk.client.SampleClientMBean;
  * @author Rocky
  *
  */
-@Management
+//
 public interface IncidentGeneratorMBean extends SampleClientMBean {
     void addIncident(String name) throws NmsIncidentException;
 

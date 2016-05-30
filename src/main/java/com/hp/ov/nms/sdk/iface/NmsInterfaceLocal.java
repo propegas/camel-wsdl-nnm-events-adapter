@@ -1,13 +1,13 @@
 package com.hp.ov.nms.sdk.iface;
 
-import javax.ejb.Local;
+//
 
 import com.hp.ov.nms.sdk.filter.Filter;
 import com.hp.ov.nms.sdk.inventory.Capability;
 import com.hp.ov.nms.sdk.inventory.CustomAttribute;
 import com.hp.ov.nms.sdk.inventory.ManagementMode;
 
-@Local
+//
 public interface NmsInterfaceLocal {
     Interface[] getInterfaces(Filter filter) throws NmsInterfaceException;
     Integer getInterfaceCount(Filter filter) throws NmsInterfaceException;

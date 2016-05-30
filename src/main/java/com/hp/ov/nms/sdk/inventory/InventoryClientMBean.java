@@ -18,19 +18,19 @@
  */
 package com.hp.ov.nms.sdk.inventory;
 
-import java.util.List;
-
-import org.jboss.ejb3.annotation.Management;
-
 import com.hp.ov.nms.sdk.client.SampleClientMBean;
 import com.hp.ov.nms.sdk.iface.NmsInterfaceException;
 import com.hp.ov.nms.sdk.node.NmsNodeException;
 import com.hp.ov.nms.sdk.node.Node;
 
+import java.util.List;
+
+//
+
 /**
  * JMX-Console management interface for Inventory management bean.
  */
-@Management
+//
 public interface InventoryClientMBean extends SampleClientMBean {
     int getCount();
     String pageThroughIncidents() throws Exception;
@@ -167,7 +167,7 @@ public interface InventoryClientMBean extends SampleClientMBean {
     /**
      * Remove a set of custom attributes from the interface
      * @param ifacePid Interface PID
-     * @param names A list of names of custom attributes to remove
+     * @param name A list of names of custom attributes to remove
      * @throws NmsInterfaceException
      */
     void removeIfaceCustomAttribute(String ifacePid, String name) throws NmsInterfaceException;

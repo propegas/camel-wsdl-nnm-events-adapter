@@ -1,10 +1,9 @@
 package com.hp.ov.nms.sdk.security;
 
-import javax.ejb.Local;
 
 import com.hp.ov.nms.sdk.filter.Filter;
 
-@Local
+
 public interface NmsSecurityServiceLocal {
     /**
      * List available SecurityGroups.

@@ -1,8 +1,5 @@
 package com.hp.ov.nms.sdk.snmp;
 
-import javax.ejb.Local;
-
-@Local
 public interface NmsSnmpLocal {
     SnmpConfigResponse[] getNodeConfigByIds(String[] nodeIds) throws NmsSnmpException;
 	SnmpConfiguration[] getNodeConfiguration(String[] hostnames) throws NmsSnmpException;

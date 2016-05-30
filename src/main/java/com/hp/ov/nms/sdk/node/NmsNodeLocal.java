@@ -1,6 +1,5 @@
 package com.hp.ov.nms.sdk.node;
 
-import javax.ejb.Local;
 
 import com.hp.ov.nms.sdk.filter.Filter;
 import com.hp.ov.nms.sdk.inventory.Capability;
@@ -8,7 +7,7 @@ import com.hp.ov.nms.sdk.inventory.CustomAttribute;
 import com.hp.ov.nms.sdk.inventory.ManagementMode;
 import com.hp.ov.nms.sdk.inventory.Status;
 
-@Local
+
 public interface NmsNodeLocal {
     Node[] getNodes(Filter filter) throws NmsNodeException;
     Integer getNodeCount(Filter filter) throws NmsNodeException;
