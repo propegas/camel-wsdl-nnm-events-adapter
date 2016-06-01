@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>ru.atc.monitoring</groupId>
 	<artifactId>camel-wsdl-nnm-adapter</artifactId>
-	<version>0.3.2-SNAPSHOT</version>
+    <version>0.3.3-SNAPSHOT</version>
 	
 	<properties>
 		<version>0.6.5-SNAPSHOT</version>
@@ -96,13 +96,13 @@
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
-			<version>1.7.12</version>
+            <version>1.7.18</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
-			<version>1.7.12</version>
+            <version>1.7.18</version>
 		</dependency>
 
 	</dependencies>
@@ -186,6 +186,11 @@
 				<artifactId>maven-jar-plugin</artifactId>
 				<version>2.6</version>
 				<configuration>
+                    <excludes>
+                        <exclude>*.properties</exclude>
+                        <exclude>*.properties*</exclude>
+                        <exclude>*.xml</exclude>
+                    </excludes>
 					<archive>
 						<manifest>
 							<addClasspath>true</addClasspath>

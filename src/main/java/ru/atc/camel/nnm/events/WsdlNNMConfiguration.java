@@ -11,6 +11,10 @@ public class WsdlNNMConfiguration {
 	private String wsusername;
 	
 	private String wsdlapiurl;
+
+	private int wsdlMaxObjects;
+
+	private int wsdlEventsMaxAgeInDays;
 	
 	private String source;
 	
@@ -173,4 +177,19 @@ public class WsdlNNMConfiguration {
 	}
 
 
+	public int getWsdlEventsMaxAgeInDays() {
+		return wsdlEventsMaxAgeInDays;
+	}
+
+	public void setWsdlEventsMaxAgeInDays(int wsdlEventsMaxAgeInDays) {
+		this.wsdlEventsMaxAgeInDays = wsdlEventsMaxAgeInDays;
+	}
+
+	public int getWsdlMaxObjects() {
+		return wsdlMaxObjects;
+	}
+
+	public void setWsdlMaxObjects(int wsdlMaxObjects) {
+		this.wsdlMaxObjects = wsdlMaxObjects;
+	}
 }
