@@ -11,15 +11,22 @@ import org.apache.camel.model.dataformat.JsonLibrary;
 import org.apache.camel.processor.idempotent.FileIdempotentRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.at_consulting.itsm.event.Event;
+import ru.atc.adapters.type.Event;
 
 import javax.jms.ConnectionFactory;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+
+import static ru.atc.adapters.message.CamelMessageManager.genHeartbeatMessage;
 
 public class Main {
 
-    public static String activemq_port = null;
-    public static String activemq_ip = null;
+    private static String activemqPort;
+    private static String activemqIp;
+    private static String adaptername;
     private static Logger logger = LoggerFactory.getLogger(Main.class);
 
     public static void main(String[] args) throws Exception {
@@ -28,18 +35,24 @@ public class Main {
         logger.info("Press CTRL+C to terminate the JVM");
 
 
-        if (args.length == 2) {
-            activemq_port = args[1];
-            activemq_ip = args[0];
+        try {
+            // get Properties from file
+            InputStream input = new FileInputStream("zabbixapi.properties");
+            Properties prop = new Properties();
+
+            // load a properties file
+            prop.load(input);
+
+            adaptername = prop.getProperty("adaptername");
+            activemqIp = prop.getProperty("activemq.ip");
+            activemqPort = prop.getProperty("activemq.port");
+        } catch (IOException ex) {
+            logger.error("Error while open and parsing properties file", ex);
         }
 
-        if (activemq_port == null || activemq_port == "")
-            activemq_port = "61616";
-        if (activemq_ip == null || activemq_ip == "")
-            activemq_ip = "172.20.19.195";
-
-        logger.info("activemq_ip: " + activemq_ip);
-        logger.info("activemq_port: " + activemq_port);
+        logger.info("**** adaptername: " + adaptername);
+        logger.info("activemqIp: " + activemqIp);
+        logger.info("activemqPort: " + activemqPort);
 
         org.apache.camel.main.Main main = new org.apache.camel.main.Main();
         main.enableHangupSupport();
@@ -50,7 +63,7 @@ public class Main {
             public void configure() throws Exception {
 
 				/*
-				XStream xstream = new XStream();
+                XStream xstream = new XStream();
 				xstream.processAnnotations(Event.class);
 
 				XStreamDataFormat xStreamDataFormat = new XStreamDataFormat();
@@ -64,22 +77,17 @@ public class Main {
                 myJson.setLibrary(JsonLibrary.Jackson);
                 myJson.setAllowJmsType(true);
                 myJson.setUnmarshalType(Event.class);
-                //myJson.setPrettyPrint(true);
 
                 PropertiesComponent properties = new PropertiesComponent();
                 properties.setLocation("classpath:wsdlnnm.properties");
                 getContext().addComponent("properties", properties);
 
-                ConnectionFactory connectionFactory = new ActiveMQConnectionFactory
-                        ("tcp://" + activemq_ip + ":" + activemq_port);
+                ConnectionFactory connectionFactory = new ActiveMQConnectionFactory(
+                        "tcp://" + activemqIp + ":" + activemqPort);
                 getContext().addComponent("activemq", JmsComponent.jmsComponentAutoAcknowledge(connectionFactory));
 
-                //HazelcastInstance ttt = null;
-                // create an instance with repo 'my-repo'
-                //HazelcastIdempotentRepository hazelcastIdempotentRepo = new HazelcastIdempotentRepository(ttt, "my-repo");
-
                 File cachefile = new File("sendedEvents.dat");
-                cachefile.createNewFile();
+                logger.info(String.format("Cache file created: %s", cachefile.createNewFile()));
 
                 from("wsdlnnm://events?"
                         + "delay={{delay}}&"
@@ -96,8 +104,6 @@ public class Main {
                         .choice()
                         .when(header("Type").isEqualTo("Error"))
                         .marshal(myJson)
-                        //.transform(body().convertToString())
-                        //.unmarshal(myJson)
                         .to("activemq:{{eventsqueue}}")
                         .log("Error: ${id} ${header.EventUniqId}")
 
@@ -107,20 +113,16 @@ public class Main {
                                 FileIdempotentRepository.fileIdempotentRepository(cachefile, 2000, 51200000)
                         )
 
-
                         .marshal(myJson)
-                        //.transform(body().convertToString())
-                        //.marshal(myJaxb)
-                        //.log("${id} ${header.EventIdAndStatus}")
                         .to("activemq:{{eventsqueue}}")
                         .log("*** NEW EVENT: ${id} ${header.EventIdAndStatus}");
-
 
                 // Heartbeats
                 from("timer://foo?period={{heartbeatsdelay}}")
                         .process(new Processor() {
+                            @Override
                             public void process(Exchange exchange) throws Exception {
-                                WsdlNNMConsumer.genHeartbeatMessage(exchange);
+                                genHeartbeatMessage(exchange, adaptername);
                             }
                         })
                         //.bean(WsdlNNMConsumer.class, "genHeartbeatMessage", exchange)

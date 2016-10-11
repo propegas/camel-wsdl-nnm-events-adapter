@@ -6,13 +6,17 @@
     <version>0.3.3-SNAPSHOT</version>
 	
 	<properties>
-		<version>0.6.5-SNAPSHOT</version>
  		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<camel-version>2.16.2</camel-version>
 		<project.build.targetName>camelNNMv2</project.build.targetName>
 	</properties>
 
 	<dependencies>
+		<dependency>
+			<groupId>ru.atc.adapters.general</groupId>
+			<artifactId>message-api</artifactId>
+			<version>1.2.1</version>
+		</dependency>
 
 		<dependency>
 			<groupId>org.apache.camel</groupId>
@@ -96,7 +100,7 @@
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
-            <version>1.7.18</version>
+			<version>1.7.18</version>
 		</dependency>
 
 		<dependency>

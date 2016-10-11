@@ -17,6 +17,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
+import static ru.atc.adapters.message.CamelMessageManager.genAndSendErrorMessage;
+import static ru.atc.adapters.message.CamelMessageManager.genHeartbeatMessage;
+
 //import com.hp.ov.nms.sdk.incident.GetIncidents;
 //import ru.atc.camel.nnm.devices.WsdlNNMConsumer.PersistentEventSeverity;
 //import ru.atc.camel.nnm.devices.WsdlNNMConsumer.PersistentEventSeverity;
@@ -37,6 +40,7 @@ public class WsdlNNMConsumer extends ScheduledPollConsumer {
         this.setDelay(endpoint.getConfiguration().getDelay());
     }
 
+    /*
     public static void genHeartbeatMessage(Exchange exchange) {
         // TODO Auto-generated method stub
         long timestamp = System.currentTimeMillis();
@@ -69,6 +73,7 @@ public class WsdlNNMConsumer extends ScheduledPollConsumer {
             //e.printStackTrace();
         }
     }
+    */
 
     @Override
     protected int poll() throws Exception {
@@ -88,11 +93,9 @@ public class WsdlNNMConsumer extends ScheduledPollConsumer {
     public long beforePoll(long timeout) throws Exception {
 
         logger.info("*** Before Poll!!!");
-        // only one operation implemented for now !
-        //throw new IllegalArgumentException("Incorrect operation: ");
 
         //send HEARTBEAT
-        genHeartbeatMessage(getEndpoint().createExchange());
+        genHeartbeatMessage(getEndpoint().createExchange(), endpoint.getConfiguration().getAdaptername());
 
         return timeout;
     }
@@ -123,20 +126,12 @@ public class WsdlNNMConsumer extends ScheduledPollConsumer {
 
             for (Incident allevent : allevents) {
 
-                //logger.info("ID: " +  allevents[i].getId());
-                //allevents[i].getCreated().getTime()
-                //logger.info(String.format("TimeCreated: %d", allevents[i].getModified().getTime()));
-
                 logger.debug(String.format("%d", allevent.getModified().getTime() / 1000));
 
                 genevent = genEventObj(allevent);
 
                 logger.debug(genevent.toString());
                 logger.debug(String.format("%d", allevent.getModified().getTime() / 1000));
-
-                //Cia[] cias = allevents[i].getCias();
-
-                //cias[0].
 
                 logger.debug(" **** Create Exchange container");
                 Exchange exchange = getEndpoint().createExchange();
@@ -158,6 +153,16 @@ public class WsdlNNMConsumer extends ScheduledPollConsumer {
         return 1;
     }
 
+    private void genErrorMessage(String message) {
+        genAndSendErrorMessage(this, message, new RuntimeException("No additional exception's text."),
+                endpoint.getConfiguration().getAdaptername());
+    }
+
+    private void genErrorMessage(String message, Exception exception) {
+        genAndSendErrorMessage(this, message, exception,
+                endpoint.getConfiguration().getAdaptername());
+    }
+/*
     private void genErrorMessage(String message) {
         long timestamp = System.currentTimeMillis();
         timestamp = timestamp / 1000;
@@ -188,6 +193,7 @@ public class WsdlNNMConsumer extends ScheduledPollConsumer {
         }
 
     }
+    */
 
     private Incident[] getClosedEventsById(SampleClient sampleClient) throws Exception {
         // TODO Auto-generated method stub
