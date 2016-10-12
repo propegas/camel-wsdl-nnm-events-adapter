@@ -2,6 +2,7 @@ package ru.atc.camel.nnm.events;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.camel.Exchange;
+import org.apache.camel.LoggingLevel;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.jms.JmsComponent;
@@ -22,22 +23,28 @@ import java.util.Properties;
 
 import static ru.atc.adapters.message.CamelMessageManager.genHeartbeatMessage;
 
-public class Main {
+public final class Main {
 
+    private static final Logger logger = LoggerFactory.getLogger("mainLogger");
+    private static final Logger loggerErrors = LoggerFactory.getLogger("errorsLogger");
+    private static final int CACHE_SIZE = 2500;
+    private static final int MAX_FILE_SIZE = 512000;
     private static String activemqPort;
     private static String activemqIp;
     private static String adaptername;
-    private static Logger logger = LoggerFactory.getLogger(Main.class);
+
+    private Main() {
+
+    }
 
     public static void main(String[] args) throws Exception {
 
         logger.info("Starting Custom Apache Camel component example");
         logger.info("Press CTRL+C to terminate the JVM");
 
-
         try {
             // get Properties from file
-            InputStream input = new FileInputStream("zabbixapi.properties");
+            InputStream input = new FileInputStream("wsdlnnm.properties");
             Properties prop = new Properties();
 
             // load a properties file
@@ -55,84 +62,76 @@ public class Main {
         logger.info("activemqPort: " + activemqPort);
 
         org.apache.camel.main.Main main = new org.apache.camel.main.Main();
-        main.enableHangupSupport();
-
-        main.addRouteBuilder(new RouteBuilder() {
-
-            @Override
-            public void configure() throws Exception {
-
-				/*
-                XStream xstream = new XStream();
-				xstream.processAnnotations(Event.class);
-
-				XStreamDataFormat xStreamDataFormat = new XStreamDataFormat();
-				xStreamDataFormat.setXStream(xstream);
-				
-				DataFormat myJaxb =
-					      new JaxbDataFormat("ru.at_consulting.itsm.event");
-				*/
-                JsonDataFormat myJson = new JsonDataFormat();
-                myJson.setPrettyPrint(true);
-                myJson.setLibrary(JsonLibrary.Jackson);
-                myJson.setAllowJmsType(true);
-                myJson.setUnmarshalType(Event.class);
-
-                PropertiesComponent properties = new PropertiesComponent();
-                properties.setLocation("classpath:wsdlnnm.properties");
-                getContext().addComponent("properties", properties);
-
-                ConnectionFactory connectionFactory = new ActiveMQConnectionFactory(
-                        "tcp://" + activemqIp + ":" + activemqPort);
-                getContext().addComponent("activemq", JmsComponent.jmsComponentAutoAcknowledge(connectionFactory));
-
-                File cachefile = new File("sendedEvents.dat");
-                logger.info(String.format("Cache file created: %s", cachefile.createNewFile()));
-
-                from("wsdlnnm://events?"
-                        + "delay={{delay}}&"
-                        + "wsdlapiurl={{wsdlapiurl}}&"
-                        + "wsdlapiport={{wsdlapiport}}&"
-                        + "wsusername={{wsusername}}&"
-                        + "wspassword={{wspassword}}&"
-                        + "wsdlMaxObjects={{wsdlMaxObjects}}&"
-                        + "wsdlEventsMaxAgeInDays={{wsdlEventsMaxAgeInDays}}&"
-                        + "eventsdump={{eventsdump}}&"
-                        + "source={{source}}&"
-                        + "adaptername={{adaptername}}")
-
-                        .choice()
-                        .when(header("Type").isEqualTo("Error"))
-                        .marshal(myJson)
-                        .to("activemq:{{eventsqueue}}")
-                        .log("Error: ${id} ${header.EventUniqId}")
-
-                        .otherwise()
-                        .idempotentConsumer(
-                                header("EventIdAndStatus"),
-                                FileIdempotentRepository.fileIdempotentRepository(cachefile, 2000, 51200000)
-                        )
-
-                        .marshal(myJson)
-                        .to("activemq:{{eventsqueue}}")
-                        .log("*** NEW EVENT: ${id} ${header.EventIdAndStatus}");
-
-                // Heartbeats
-                from("timer://foo?period={{heartbeatsdelay}}")
-                        .process(new Processor() {
-                            @Override
-                            public void process(Exchange exchange) throws Exception {
-                                genHeartbeatMessage(exchange, adaptername);
-                            }
-                        })
-                        //.bean(WsdlNNMConsumer.class, "genHeartbeatMessage", exchange)
-                        .marshal(myJson)
-                        .to("activemq:{{heartbeatsqueue}}")
-                        .log("*** Heartbeat: ${id}");
-
-            }
-        });
+        main.addRouteBuilder(new IntegrationRoute());
 
         main.run();
     }
+
+    private static class IntegrationRoute extends RouteBuilder {
+
+        @Override
+        public void configure() throws Exception {
+
+            JsonDataFormat myJson = new JsonDataFormat();
+            myJson.setPrettyPrint(true);
+            myJson.setLibrary(JsonLibrary.Jackson);
+            myJson.setAllowJmsType(true);
+            myJson.setUnmarshalType(Event.class);
+
+            PropertiesComponent properties = new PropertiesComponent();
+            properties.setLocation("classpath:wsdlnnm.properties");
+            getContext().addComponent("properties", properties);
+
+            ConnectionFactory connectionFactory = new ActiveMQConnectionFactory(
+                    "tcp://" + activemqIp + ":" + activemqPort);
+            getContext().addComponent("activemq", JmsComponent.jmsComponentAutoAcknowledge(connectionFactory));
+
+            File cachefile = new File("sendedEvents.dat");
+            logger.info(String.format("Cache file created: %s", cachefile.createNewFile()));
+
+            from(new StringBuilder().append("wsdlnnm://events?")
+                    .append("delay={{delay}}&")
+                    .append("wsdlapiurl={{wsdlapiurl}}&")
+                    .append("wsdlapiport={{wsdlapiport}}&")
+                    .append("wsusername={{wsusername}}&")
+                    .append("wspassword={{wspassword}}&")
+                    .append("wsdlMaxObjects={{wsdlMaxObjects}}&")
+                    .append("wsdlEventsMaxAgeInDays={{wsdlEventsMaxAgeInDays}}&")
+                    .append("source={{source}}&")
+                    .append("adaptername={{adaptername}}")
+                    .toString())
+
+                    .choice()
+                    .when(header("Type").isEqualTo("Error"))
+                    .marshal(myJson)
+                    .to("activemq:{{errorsqueue}}")
+                    .log("Error: ${id} ${header.EventIdAndStatus}")
+                    .log(LoggingLevel.ERROR, logger, "*** NEW ERROR BODY: ${in.body}")
+                    .log(LoggingLevel.ERROR, loggerErrors, "*** NEW ERROR BODY: ${in.body}")
+
+                    .otherwise()
+                    .idempotentConsumer(
+                            header("EventIdAndStatus"),
+                            FileIdempotentRepository.fileIdempotentRepository(cachefile, CACHE_SIZE, MAX_FILE_SIZE)
+                    )
+
+                    .marshal(myJson)
+                    .to("activemq:{{eventsqueue}}")
+                    .log("*** NEW EVENT: ${id} ${header.EventIdAndStatus}");
+
+            // Heartbeats
+            from("timer://foo?period={{heartbeatsdelay}}")
+                    .process(new Processor() {
+                        @Override
+                        public void process(Exchange exchange) throws Exception {
+                            genHeartbeatMessage(exchange, adaptername);
+                        }
+                    })
+                    .marshal(myJson)
+                    .to("activemq:{{heartbeatsqueue}}")
+                    .log("*** Heartbeat: ${id}");
+
+        }
+    }
+
 }
