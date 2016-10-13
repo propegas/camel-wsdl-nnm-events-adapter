@@ -159,9 +159,9 @@ public class WsdlNNMConsumer extends ScheduledPollConsumer {
                 closedEvents = nmsincident.getIncidents(existFilter);
 
             } catch (Exception e) {
-                loggerErrors.error(" **** Error while receiving Opened Events ", e);
-                logger.error(" **** Error while receiving Opened Events ", e);
-                throw new Error("Error while receiving Opened Events. " + e.getMessage());
+                loggerErrors.error(" **** Error while receiving Closed Events ", e);
+                logger.error(" **** Error while receiving Closed Events ", e);
+                throw new RuntimeException("Error while receiving Closed Events. " + e.getMessage());
             }
 
             if (closedEvents.length > 0) {
