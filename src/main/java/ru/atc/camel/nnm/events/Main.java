@@ -117,6 +117,7 @@ public final class Main {
 
                     .marshal(myJson)
                     .to("activemq:{{eventsqueue}}")
+                    .log(LoggingLevel.DEBUG, logger, "*** NEW EVENT BODY: ${in.body}")
                     .log("*** NEW EVENT: ${id} ${header.EventIdAndStatus}");
 
             // Heartbeats
