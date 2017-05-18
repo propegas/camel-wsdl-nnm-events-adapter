@@ -113,12 +113,19 @@ public final class Main {
                     .idempotentConsumer(
                             header("EventIdAndStatus"),
                             FileIdempotentRepository.fileIdempotentRepository(cachefile, CACHE_SIZE, MAX_FILE_SIZE)
-                    )
+                    ).skipDuplicate(false)
 
                     .marshal(myJson)
-                    .to("activemq:{{eventsqueue}}")
+
+                    .filter(exchangeProperty(Exchange.DUPLICATE_MESSAGE).isEqualTo(true))
+                    .log("*** REPEATED EVENT: ${id} ${header.EventIdAndStatus}")
+                    .log(LoggingLevel.DEBUG, logger, "*** REPEATED EVENT BODY: ${in.body}")
+                    .stop()
+                    .end()
+
+                    .log("*** NEW EVENT: ${id} ${header.EventIdAndStatus}")
                     .log(LoggingLevel.DEBUG, logger, "*** NEW EVENT BODY: ${in.body}")
-                    .log("*** NEW EVENT: ${id} ${header.EventIdAndStatus}");
+                    .to("activemq:{{eventsqueue}}");
 
             // Heartbeats
             from("timer://foo?period={{heartbeatsdelay}}")
