@@ -87,6 +87,9 @@ public final class Main {
             getContext().addComponent("activemq", JmsComponent.jmsComponentAutoAcknowledge(connectionFactory));
 
             File cachefile = new File("sendedEvents.dat");
+            if (cachefile.exists()) {
+                boolean delete = cachefile.delete();
+            }
             logger.info(String.format("Cache file created: %s", cachefile.createNewFile()));
 
             from(new StringBuilder().append("wsdlnnm://events?")
@@ -120,6 +123,7 @@ public final class Main {
                     .filter(exchangeProperty(Exchange.DUPLICATE_MESSAGE).isEqualTo(true))
                     .log("*** REPEATED EVENT: ${id} ${header.EventIdAndStatus}")
                     .log(LoggingLevel.DEBUG, logger, "*** REPEATED EVENT BODY: ${in.body}")
+                    .to("activemq:{{eventsqueue}}")
                     .stop()
                     .end()
 
